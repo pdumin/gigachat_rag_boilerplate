@@ -10,7 +10,7 @@
     ```
 
 2. Install dependencies: `pip install -r requirements.txt`
-3. Create `.secrets.toml` in `.streamlit` dir with `GIGA_KEY='you_gigachat_key'`
+3. Create `.streamlit/secrets.toml` with `GIGA_KEY='you_gigachat_key'`
 4. Run app: `streamlit run app.py`
 
 Replace `source.txt` file with data you needed. 
