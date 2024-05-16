@@ -1,4 +1,4 @@
-## Small Streamlit RAG-application
+## Small Streamlit RAG-application 
 
 ### Running in docker
 
