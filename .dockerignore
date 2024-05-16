@@ -1,0 +1,8 @@
+.venv
+.streamlit
+.vscode
+.env
+.gitignore
+.streamlit
+.git
+README.MD

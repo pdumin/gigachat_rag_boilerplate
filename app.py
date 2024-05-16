@@ -2,7 +2,6 @@ import streamlit as st
 import os
 from dotenv import load_dotenv
 from langchain_community.chat_models.gigachat import GigaChat
-
 from langchain_community.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
@@ -14,7 +13,8 @@ from chromadb.config import Settings
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-KEY=st.secrets['GIGA_KEY']
+# Retrieve GIGA_KEY from environment variables
+KEY = os.getenv('GIGA_KEY')
 
 llm = GigaChat(credentials=KEY, verify_ssl_certs=False)
 
@@ -46,14 +46,10 @@ for message in st.session_state.messages:
 
 # Accept user input
 if prompt := st.chat_input("What is up?"):
-    # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
-    # Display user message in chat message container
     with st.chat_message("user"):
         st.markdown(prompt)
     response = qa_chain({"query": prompt})
-    # Display assistant response in chat message container
     with st.chat_message("assistant"):
         st.write(response['result'])
-    # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": response['result']})
