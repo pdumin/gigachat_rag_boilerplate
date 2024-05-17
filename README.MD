@@ -16,5 +16,5 @@
 Replace `source.txt` file with data you needed. 
 
 **TO DO**
-* source file uploading
+* ~~source file uploading~~
 * setting chunksize and overlap size from web-interface 
