@@ -2,3 +2,5 @@
 .streamlit/secrets.toml
 .vscode
 .env
+
+.env
