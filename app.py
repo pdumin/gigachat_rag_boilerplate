@@ -14,19 +14,36 @@ from chromadb.config import Settings
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+if 'file' not in st.session_state:
+    st.session_state.file = False
+
+def set_file():
+    st.session_state.file = True
+    st.session_state.messages = []
+
+def rerun():
+    os.remove('src.txt')
+    st.rerun()
+
+
 KEY=st.secrets['GIGA_KEY']
 
-llm = GigaChat(credentials=KEY, verify_ssl_certs=False)
+
 
 @st.cache_resource
-def load_pipeline():
+def load_pipeline(uploaded_file):
+    if uploaded_file is not None: 
+        with open('src.txt', 'wb') as f:
+            f.write(uploaded_file.getbuffer())
+        st.session_state.file = True
     with st.spinner('Splitting and getting embeddings...'):
-        loader = TextLoader("source.txt")       
+        loader = TextLoader("src.txt")       
         documents = loader.load()
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500,
             chunk_overlap=150,
         )
+        llm = GigaChat(credentials=KEY, verify_ssl_certs=False)
         documents = text_splitter.split_documents(documents)
         embeddings = GigaChatEmbeddings(credentials=KEY, verify_ssl_certs=False)
         db = Chroma.from_documents(
@@ -34,10 +51,17 @@ def load_pipeline():
             embeddings,
             client_settings=Settings(anonymized_telemetry=False))
     qa_chain = RetrievalQA.from_chain_type(llm, retriever=db.as_retriever())
-    st.success('Done')
     return qa_chain
 
-qa_chain = load_pipeline()
+uploaded_file = st.sidebar.file_uploader(
+    'Upload file', 
+    type=['txt'], 
+    accept_multiple_files=False, 
+    on_change=set_file
+    )
+
+if st.session_state.file:
+    qa_chain = load_pipeline(uploaded_file)
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
