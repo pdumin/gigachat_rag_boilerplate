@@ -13,7 +13,7 @@
 3. Create `.streamlit/secrets.toml` with `GIGA_KEY='you_gigachat_key'` (get key [here](https://developers.sber.ru/docs/ru/gigachat/individuals-quickstart))
 4. Run app: `streamlit run app.py`
 
-Replace `source.txt` file with data you needed. 
+You can upload `*.txt` or `*.pdf` files. 
 
 **TO DO**
 * ~~source file uploading~~
