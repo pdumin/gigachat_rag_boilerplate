@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from langchain_community.chat_models.gigachat import GigaChat
 
-from langchain_community.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings.gigachat import GigaChatEmbeddings
@@ -22,22 +22,24 @@ def set_file():
     st.session_state.messages = []
 
 def rerun():
-    os.remove('src.txt')
+    os.remove(f'src.{fextension}')
     st.rerun()
 
 
 KEY=st.secrets['GIGA_KEY']
 
 
-
 @st.cache_resource
 def load_pipeline(uploaded_file):
     if uploaded_file is not None: 
-        with open('src.txt', 'wb') as f:
+        with open(f'src.{fextension}', 'wb') as f:
             f.write(uploaded_file.getbuffer())
         st.session_state.file = True
     with st.spinner('Splitting and getting embeddings...'):
-        loader = TextLoader("src.txt")       
+        if fextension == 'txt':
+            loader = TextLoader("src.txt")       
+        elif fextension == 'pdf':
+            loader = PyPDFLoader("src.pdf")
         documents = loader.load()
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500,
@@ -53,15 +55,68 @@ def load_pipeline(uploaded_file):
     qa_chain = RetrievalQA.from_chain_type(llm, retriever=db.as_retriever())
     return qa_chain
 
+# @st.cache_resource
+# def load_txt_pipeline(uploaded_file):
+#     if uploaded_file is not None: 
+#         with open('src.txt', 'wb') as f:
+#             f.write(uploaded_file.getbuffer())
+#         st.session_state.file = True
+#     with st.spinner('Splitting and getting embeddings...'):
+#         loader = TextLoader("src.txt")       
+#         documents = loader.load()
+#         text_splitter = RecursiveCharacterTextSplitter(
+#             chunk_size=500,
+#             chunk_overlap=150,
+#         )
+#         llm = GigaChat(credentials=KEY, verify_ssl_certs=False)
+#         documents = text_splitter.split_documents(documents)
+#         embeddings = GigaChatEmbeddings(credentials=KEY, verify_ssl_certs=False)
+#         db = Chroma.from_documents(
+#             documents,
+#             embeddings,
+#             client_settings=Settings(anonymized_telemetry=False))
+#     qa_chain = RetrievalQA.from_chain_type(llm, retriever=db.as_retriever())
+#     return qa_chain
+
+# @st.cache_resource
+# def load_pdf_pipeline(uploaded_file):
+#     if uploaded_file is not None: 
+#         with open('src.pdf', 'wb') as f:
+#             f.write(uploaded_file.getbuffer())
+#         st.session_state.file = True
+#     with st.spinner('Splitting and getting embeddings...'):
+#         loader = PyPDFLoader("src.pdf")       
+#         documents = loader.load()
+#         text_splitter = RecursiveCharacterTextSplitter(
+#             chunk_size=500,
+#             chunk_overlap=150,
+#         )
+#         llm = GigaChat(credentials=KEY, verify_ssl_certs=False)
+#         documents = text_splitter.split_documents(documents)
+#         embeddings = GigaChatEmbeddings(credentials=KEY, verify_ssl_certs=False)
+#         db = Chroma.from_documents(
+#             documents,
+#             embeddings,
+#             client_settings=Settings(anonymized_telemetry=False))
+#     qa_chain = RetrievalQA.from_chain_type(llm, retriever=db.as_retriever())
+#     return qa_chain
+
 uploaded_file = st.sidebar.file_uploader(
     'Upload file', 
-    type=['txt'], 
+    type=['txt', 'pdf'], 
     accept_multiple_files=False, 
     on_change=set_file
     )
 
 if st.session_state.file:
+    fname = uploaded_file.name
+    fextension = fname[fname.rfind('.')+1:]
     qa_chain = load_pipeline(uploaded_file)
+    # if fextension == 'txt':
+    #     qa_chain = load_txt_pipeline(uploaded_file)
+    # elif fextension == 'pdf':
+    #     qa_chain = load_pdf_pipeline(uploaded_file)
+
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
