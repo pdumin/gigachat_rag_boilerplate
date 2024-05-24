@@ -17,4 +17,4 @@ You can upload `*.txt` or `*.pdf` files.
 
 **TO DO**
 * ~~source file uploading~~
-* setting chunksize and overlap size from web-interface 
+* ~~setting chunksize and overlap size from web-interface~~
